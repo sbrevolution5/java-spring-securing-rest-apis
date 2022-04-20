@@ -26,7 +26,7 @@ public class ResolutionsApplication extends WebSecurityConfigurerAdapter {
 		http.
 				authorizeRequests(authz ->authz
 						.anyRequest().authenticated()
-				).httpBasic(basic->{});
+				).httpBasic(basic->{}).cors(cors->{});
 	}
 	public static void main(String[] args) {
 		SpringApplication.run(ResolutionsApplication.class, args);
