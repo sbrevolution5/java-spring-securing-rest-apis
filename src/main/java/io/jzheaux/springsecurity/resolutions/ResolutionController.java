@@ -6,23 +6,30 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @RestController
 public class ResolutionController {
 	private final ResolutionRepository resolutions;
+	private final UserRepository users;
 
-	public ResolutionController(ResolutionRepository resolutions) {
+	public ResolutionController(ResolutionRepository resolutions, UserRepository users) {
 		this.resolutions = resolutions;
+		this.users = users;
 	}
 
 	@GetMapping("/resolutions")
 	@PreAuthorize("hasAuthority('resolution:read')")
 	@PostFilter("@post.filter(#root)")
 	public Iterable<Resolution> read() {
-		return this.resolutions.findAll();
+		Iterable<Resolution> resolutions = this.resolutions.findAll();
+		for (Resolution resolution :
+				resolutions) {
+			String fullName = this.users.findByUsername(resolution.getOwner()).map(User::getFullName).orElse("Anonymous");
+			resolution.setText((resolution.getText() + ", by "+ fullName));
+		}
+		return resolutions;
 	}
 
 	@GetMapping("/resolution/{id}")

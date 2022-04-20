@@ -17,6 +17,8 @@ public class User implements Serializable {
     @Id
     private UUID id;
 
+    @Column(name = "full_name")
+    private String fullName;
 
     @Column
     private String username;
@@ -77,5 +79,14 @@ public class User implements Serializable {
         this.password = user.password;
         this.enabled = user.enabled;
         this.userAuthorities = user.userAuthorities;
+        this.fullName = user.fullName;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 }
