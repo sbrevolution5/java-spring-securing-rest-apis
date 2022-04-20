@@ -3,6 +3,9 @@ package io.jzheaux.springsecurity.resolutions;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
@@ -24,10 +27,14 @@ public class ResolutionController {
 	@PostFilter("@post.filter(#root)")
 	public Iterable<Resolution> read() {
 		Iterable<Resolution> resolutions = this.resolutions.findAll();
-		for (Resolution resolution :
-				resolutions) {
-			String fullName = this.users.findByUsername(resolution.getOwner()).map(User::getFullName).orElse("Anonymous");
-			resolution.setText((resolution.getText() + ", by "+ fullName));
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("user:read"))){
+
+			for (Resolution resolution :
+					resolutions) {
+				String fullName = this.users.findByUsername(resolution.getOwner()).map(User::getFullName).orElse("Anonymous");
+				resolution.setText((resolution.getText() + ", by "+ fullName));
+			}
 		}
 		return resolutions;
 	}
