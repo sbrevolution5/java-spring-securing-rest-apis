@@ -28,7 +28,7 @@ public class ResolutionController {
 	@GetMapping("/resolution/{id}")
 	@PreAuthorize("hasAuthority('resolution:read')")
 	@PostAuthorize("@post.authorize(#root)")
-	@CrossOrigin
+	@CrossOrigin(allowCredentials = "true")
 	public Optional<Resolution> read(@PathVariable("id") UUID id) {
 		return this.resolutions.findById(id);
 	}
