@@ -3,6 +3,7 @@ package io.jzheaux.springsecurity.resolutions;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class UserRepositoryJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
@@ -31,6 +33,10 @@ public class UserRepositoryJwtAuthenticationConverter implements Converter<Jwt, 
         User user = this.users.findByUsername(username)
                 .orElseThrow(()->new UsernameNotFoundException("no user"));
         Collection<GrantedAuthority> authorities = this.authoritiesConverter.convert(jwt);
+        Collection<GrantedAuthority> userAuthorities = user.getUserAuthorities().stream()
+                .map(userAuthority -> new SimpleGrantedAuthority(userAuthority.getAuthority()))
+                .collect(Collectors.toList());
+        authorities.retainAll(userAuthorities);
         OAuth2AuthenticatedPrincipal principal = new UserOAuth2AuthenticatedPrincipal(user, jwt.getClaims(),authorities);
         OAuth2AccessToken credentials = new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, jwt.getTokenValue(),null,null);
         return new BearerTokenAuthentication(principal,credentials,authorities);
